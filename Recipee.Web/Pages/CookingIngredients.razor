@@ -1,0 +1,59 @@
+﻿@page "/ingredients"
+
+<PageTitle>Ingredients</PageTitle>
+
+<h1>Ingredients</h1>
+
+    <table class="table table-responsive table-striped mb-3">
+        <thead>
+            <tr>
+                <th>Name</th>
+                <th>Description</th>
+                <th></th>
+            </tr>
+        </thead>
+        <tbody>
+@if (Ingredients == null || Ingredients.Count <= 0)
+{
+            <tr>
+                <td colspan="3" class="text-center">Let add something here...</td>
+            </tr>
+}
+else
+{
+            @foreach(var item in Ingredients)
+            {
+                <tr>
+                    <td><input disabled="@(!item.IsEditing)" @bind-value="@item.Name" /></td>
+                    <td><input disabled="@(!item.IsEditing)" @bind-value="@item.Description" /></td>
+                    <td>
+                        <button class="btn btn-sm btn-info" @onclick="() => EditRow(item, true)" disabled="@item.IsEditing">Edit</button>
+                        <button class="btn btn-sm btn-warning" @onclick="() => SaveRow(item)" disabled="@(!item.IsEditing)">Save</button>
+                        <button class="btn btn-sm btn-danger" @onclick="() => RemoveRow(item)">Remove</button>
+                    </td>
+                </tr>
+            }
+}
+        </tbody>
+    </table>
+
+    <br/>
+
+<div class="card">
+    <div class="card-header">
+        Add New Ingredient
+    </div>
+    <div class="card-body">
+        <EditForm class="form" Model="NewIngredient" OnSubmit="AddNewIngredient">
+            <div class="form-group">
+                <label for="ingredient-name">Name</label>
+                <InputText id="ingredient-name" class="form-control" @bind-Value=NewIngredient.Name></InputText>
+            </div>
+            <div class="form-group mb-3">
+                <label for="ingredient-desc">Description</label>
+                <InputText id="ingredient-desc" class="form-control" @bind-Value=NewIngredient.Description></InputText>
+            </div>
+            <button type="submit" class="btn btn-warning">Add</button>
+        </EditForm>
+    </div>
+</div>

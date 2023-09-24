@@ -1,0 +1,47 @@
+﻿@page "/"
+
+<PageTitle>Recipee</PageTitle>
+
+<h1>Whats cookin?!</h1>
+
+<hr/>
+
+<div class="container mt-3 mb-3">
+    <div class="row">
+        <div class="col-md-4 col-sm-1">
+            <div class="card bg-light border-primary" style="height:300px">
+                <button class="btn btn-light h-100" @onclick=AddNewRecipee>Add Recipee</button>
+            </div>
+        </div>
+        @if (Recipees == null || Recipees.Count <= 0)
+        {
+            <div class="col-md-4 col-sm-1">
+                <div class="card bg-light" style="height:300px">
+                    Lets add some recipee
+                </div>
+            </div>
+        }
+        else
+        {
+            @foreach (var item in Recipees)
+            {
+            <div class="col-md-4 col-sm-1">
+                <div class="card" style="height:300px">
+                    <div class="card-header">
+                        <h4>@item.Title</h4> <span>@item.DateUpdated.ToShortDateString()</span>
+                    </div>
+                    <div class="card-body" style="overflow-y:auto">
+                        @item.Description
+                    </div>
+                    <div class="card-footer">
+                        <div class="button-group">
+                            <button class="btn btn-sm btn-info" @onclick="() => EditRow(item, true)" disabled="@item.IsEditing">Edit</button>
+                            <button class="btn btn-sm btn-danger" @onclick="() => RemoveRow(item)">Remove</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            }
+        }
+    </div>
+</div>

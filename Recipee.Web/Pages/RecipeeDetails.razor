@@ -1,0 +1,178 @@
+﻿@page "/recipee/details/{id:int?}"
+@page "/recipee/details"
+
+<h3>@((Id.HasValue ? "Review Recipee": "New Recipee"))</h3>
+<div class="card">
+    <div class="card-header">Recipee</div>
+    <div class="card-body">
+        <EditForm Model="ActiveRecipee" OnSubmit="SaveRecipee">
+            <div class="form-group mb-3">
+                <label for="recipee-types">Type</label>
+                <InputSelect id="recipee-types" class="form-control" @bind-Value=ActiveRecipee.RecipeeTypeId>
+                    <option value="-1">None</option>
+                    @foreach (var item in AvailableTypes)
+                    {
+                        <option value="@item.Id">@item.Description</option>
+                    }
+                </InputSelect>
+            </div>
+            <div class="form-group">
+                <label for="recipee-title">Title</label>
+                <InputText id="recipee-title" class="form-control" @bind-Value=ActiveRecipee.Title></InputText>
+            </div>
+            <div class="form-group mb-3">
+                <label for="recipee-desc">Description</label>
+                <InputTextArea id="recipee-desc" class="form-control" @bind-Value=ActiveRecipee.Description></InputTextArea>
+            </div>
+            <button type="submit" class="btn btn-warning mb-3">@((Id.HasValue ? "Update" : "Save"))</button>
+            <button type="button" class="btn btn-light mb-3" @onclick="CancelEdit">Cancel</button>
+        </EditForm>
+
+        <br/>
+
+        <div class="card">
+            <div class="card-header">Ingredients</div>
+            <div class="card-body">
+                <table class="table table-responsive mb-3">
+                    <thead>
+                        <tr>
+                            <th>Name</th>
+                            <th>Amount</th>
+                            <th>Unit</th>
+                            <th></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @if (Ingredients is null || Ingredients.Count <= 0)
+                        {
+                            <tr>
+                                <td colspan="3" class="text-center">List if ingredients</td>
+                            </tr>
+                        }
+                        else
+                        {
+                            @foreach (var item in Ingredients)
+                            {
+                                <tr>
+                                    <td>
+                                        <select class="form-control" @bind=@item.IngredientId>
+                                            @foreach (var unit in AvailableIngredients)
+                                            {
+                                                if (unit.Id == item.IngredientId)
+                                                {
+                                                    <option selected value="@unit.Id">@unit.Name</option>
+                                                }
+                                                else
+                                                {
+                                                    <option value="@unit.Id">@unit.Name</option>
+                                                }
+                                            }
+                                        </select>
+                                    </td>
+                                    <td><input class="form-control" @bind-value=@item.Amount /></td>
+                                    <td>
+                                        <select class="form-control" @bind=@item.MeasurementUnitId>
+                                            @foreach (var unit in AvailableMeasurements)
+                                            {
+                                                if (unit.Id == item.MeasurementUnitId)
+                                                {
+                                                    <option selected value="@unit.Id">@unit.Name</option>
+                                                }
+                                                else
+                                                {
+                                                    <option value="@unit.Id">@unit.Name</option>
+                                                }
+                                            }
+                                        </select>
+                                    </td>
+                                    <td>
+                                        <button class="btn btn-sm btn-info" @onclick="() => EditIngredientRow(item, true)" disabled="@item.IsEditing">Edit</button>
+                                        <button class="btn btn-sm btn-warning" @onclick="() => SaveIngredientRow(item)" disabled="@(!item.IsEditing)">Save</button>
+                                        <button class="btn btn-sm btn-danger" @onclick="() => RemoveIngredientRow(item)">Remove</button>
+                                    </td>
+                                </tr>
+                            }
+                        }
+                    </tbody>
+                </table>
+
+                <br />
+
+                <EditForm Model="NewIngredient" OnSubmit="AddIngredient">
+                    <div class="input-group">
+                        <InputSelect id="ingredient" class="form-select custom-select col-6" @bind-Value=NewIngredient.IngredientId>
+                            <option value="-1">None</option>
+                            @foreach (var item in AvailableIngredients)
+                            {
+                                <option value="@item.Id">@item.Name</option>
+                            }
+                        </InputSelect>
+                        <InputNumber id="ingredient-amount" class="form-control col-4" @bind-Value=NewIngredient.Amount></InputNumber>
+                        <InputSelect id="ingredient" class="form-select custom-select col-6" @bind-Value=NewIngredient.MeasurementUnitId>
+                            <option value="-1">None</option>
+                            @foreach (var item in AvailableMeasurements)
+                            {
+                                <option value="@item.Id">@item.Name</option>
+                            }
+                        </InputSelect>
+                        <button type="submit" class="btn btn-primary col-2">Add</button>
+                    </div>
+                </EditForm>
+            </div>
+        </div>
+
+        <br />
+
+        <div class="card">
+            <div class="card-header">Step by step guide</div>
+            <div class="card-body">
+                <ul class="list-group list-group-flush mb-3">
+                        @if (Instructions is null || Instructions.Count <= 0)
+                        {
+                            <li class="list-group-item text-center">Add instructions</li>
+                        }
+                        else 
+                        {
+                            @foreach (var item in Instructions)
+                            {
+                                <li class="list-group-item" draggable="true" 
+                                    @ondrag=@(() => InstructionOnDrag(item))
+                                    @ondrop=@(() => InstructionOnDrop(item))
+                                    ondragover="event.preventDefault();">
+                                    <div class="card">
+                                        <div class="card-body">
+                                            @if(item.IsEditing)
+                                            {
+                                                <input type="text" class="form-control" @bind-value="@item.Description" />
+                                            }
+                                            else 
+                                            {
+                                                <input type="text" readonly class="form-control" @bind-value="@item.Description"/>
+                                            }
+                                        </div>
+                                        <div class="card-footer">
+                                            <div class="button-group">
+                                                <button class="btn btn-sm btn-info" @onclick="() => EditInstructionRow(item, true)" disabled="@item.IsEditing">Edit</button>
+                                                <button class="btn btn-sm btn-warning" @onclick="() => SaveInstructionRow(item)" disabled="@(!item.IsEditing)">Save</button>
+                                                <button class="btn btn-sm btn-danger" @onclick="() => RemoveInstructionRow(item)">Remove</button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </li>
+                            }
+                        }
+                </ul>
+                
+                <EditForm Model="NewInstruction" OnSubmit="AddInstruction">
+                    <div class="input-group">
+                        <InputTextArea class="form-control" @bind-Value=NewInstruction.Description></InputTextArea>
+                        <button type="submit" class="btn btn-primary">Add</button>
+                    </div>
+                </EditForm>
+            </div>
+        </div>
+
+        <br />
+
+    </div>
+</div>

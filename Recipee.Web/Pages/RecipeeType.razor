@@ -1,0 +1,40 @@
+﻿@page "/recipee/type"
+
+<h3>RecipeeType</h3>
+
+    <table class="table mb-3">
+        <thead>
+            <tr>
+                <th>Description</th>
+                <th></th>
+            </tr>
+        </thead>
+        <tbody>
+@if (RecipeeTypes == null)
+{
+    <p><em>Loading...</em></p>
+}
+else
+{
+            @foreach (var item in RecipeeTypes)
+            {
+                <tr>
+                    <td><input disabled="@(!item.IsEditing)" @bind-value="@item.Description" /></td>
+                    <td>
+                        <button class="btn btn-sm btn-info" @onclick="() => EditRow(item, true)" disabled="@item.IsEditing">Edit</button>
+                        <button class="btn btn-sm btn-warning" @onclick="() => SaveRow(item)" disabled="@(!item.IsEditing)">Save</button>
+                        <button class="btn btn-sm btn-danger" @onclick="() => RemoveRow(item)">Remove</button>
+                    </td>
+                </tr>
+            }
+}
+        </tbody>
+    </table>
+
+<EditForm Model="NewType" OnSubmit="AddNewType">
+    <div class="input-group">
+        <span class="input-group-text">Type description</span>
+        <InputText id="type-desc" class="form-control" @bind-Value=NewType.Description></InputText>
+        <button type="submit" class="btn btn-primary">Save</button>
+    </div>
+</EditForm>

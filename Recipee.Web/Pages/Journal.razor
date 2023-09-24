@@ -1,0 +1,89 @@
+﻿@page "/journal"
+
+<PageTitle>Cooking Journal</PageTitle>
+
+<h1>
+    Cooking Journal
+</h1>
+<p>Record your recipee experimentation here</p>
+<p class="text-warning">@ErrorMsg</p>
+
+<hr/>
+<ul class="list-group list-group-flush mb-3">
+@if (Cookings == null || Cookings.Count <= 0)
+{
+    <li class="list-group-item">
+        <EditForm Model="NewJournal" OnSubmit="AddNewJournal">
+            <div class="form-group mb-3">
+                <label for="recipee-id">Select receipee</label>
+                <InputSelect id="recipee-id" class="form-control" @bind-Value=NewJournal.RecipeeId>
+                    <option value="-1">Please select</option>
+                    @foreach (var item in AvailableRecipees)
+                    {
+                    <option value="@item.Id">@item.Title</option>
+                    }
+                </InputSelect>
+            </div>
+            <div class="form-group mb-3">
+                <label for="journal-desc">Select receipee</label>
+                <InputTextArea id="journal-desc" class="form-control" @bind-Value=NewJournal.Description></InputTextArea>
+            </div>
+            <button type="submit" class="btn btn-primary">Save</button>
+        </EditForm>
+    </li>
+}
+else
+{
+    @foreach (var item in Cookings)
+    {
+        <li class="list-group-item">
+            <div class="card" style="height:300px;">
+                <div class="card-header">
+                    @if(item.IsEditing)
+                    {
+                    <select class="form-control" @bind=@item.RecipeeId>
+                        <option value="-1">Select a recipee</option>
+                    @foreach (var recipee in AvailableRecipees)
+                    {
+                        if(recipee.Id == item.RecipeeId)
+                        {
+                        <option selected value="@recipee.Id">@recipee.Title</option>
+                        }
+                        else 
+                        {
+                        <option value="@recipee.Id">@recipee.Title</option>
+                        }
+                    }
+                    </select>
+                    }
+                    else 
+                    {
+                        @(item.Recipee?.Title ?? "")
+                    }
+                </div>
+                <div class="card-body" style="overflow-y:auto;">
+                    @if(item.IsEditing)
+                    {
+                    <textarea class="form-control h-100" rows="4" cols="200" 
+                        value="@item.Description"
+                        @onchange="@((args) => item.Description = args.Value?.ToString() ?? "")">
+                    </textarea>
+                    }
+                    else 
+                    {
+                        @item.Description
+                    }
+                </div>
+                <div class="card-footer">
+                    @item.DateCreated.ToShortDateString()
+                    <div class="button-group">
+                        <button class="btn btn-sm btn-info" @onclick="() => EditRow(item, true)" disabled="@item.IsEditing">Edit</button>
+                        <button class="btn btn-sm btn-warning" @onclick="() => SaveRow(item)" disabled="@(!item.IsEditing)">Save</button>
+                        <button class="btn btn-sm btn-danger" @onclick="() => RemoveRow(item)">Remove</button>
+                    </div>
+                </div>
+            </div>
+        </li>
+    }
+}
+</ul>
